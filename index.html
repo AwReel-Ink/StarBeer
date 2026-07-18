@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>StarBeer — Suivi de vos bières goûtées</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%BA%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#c9a227">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="StarBeer">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+    <!-- ══════════════════════════════════════════════════════════════
+         DÉCORATION STEAMPUNK : pipes en arrière-plan
+    ══════════════════════════════════════════════════════════════ -->
+    <div class="steam-bg" aria-hidden="true">
+        <div class="pipe pipe-1"></div>
+        <div class="pipe pipe-2"></div>
+        <div class="gear-bg gear-1">⚙</div>
+        <div class="gear-bg gear-2">⚙</div>
+        <div class="gear-bg gear-3">⚙</div>
+        <div class="steam steam-1"></div>
+        <div class="steam steam-2"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         MODALE DE DÉTAIL (lecture seule)
+    ══════════════════════════════════════════════════════════════ -->
+    <div id="detailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+        <div class="modal-content detail-card">
+            <div class="detail-header">
+                <h2 id="detailModalTitle" class="modal-title">Détail de la bière</h2>
+                <button class="btn-close" id="detailCloseBtn" aria-label="Fermer">✕</button>
+            </div>
+            <div id="detailBody" class="detail-body"></div>
+            <div class="detail-actions">
+                <button class="btn btn-steampunk btn-brass" id="detailEditBtn">⚙ Modifier</button>
+                <button class="btn btn-steampunk btn-copper" id="detailDismissBtn">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         MODALE CRÉER / MODIFIER
+    ══════════════════════════════════════════════════════════════ -->
+    <div id="formModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="formModalTitle">
+        <div class="modal-content form-card">
+            <div class="form-header">
+                <!-- Icône engrenage à gauche du titre -->
+                <span class="form-gear-icon" aria-hidden="true">⚙</span>
+                <h2 id="formModalTitle" class="modal-title">Nouvelle Bière</h2>
+                <button class="btn-close" id="formCloseBtn" aria-label="Fermer">✕</button>
+            </div>
+
+            <form id="beerForm" novalidate>
+                <!-- PHOTO -->
+                <div class="form-section photo-section">
+                    <div class="photo-preview" id="photoPreview">
+                        <div class="photo-placeholder" id="photoPlaceholder">
+                            <span aria-hidden="true">🍺</span>
+                            <span>Aucune photo</span>
+                        </div>
+                    </div>
+                    <div class="photo-buttons">
+                        <button type="button" class="btn btn-photo" id="galleryBtn" aria-label="Choisir depuis la galerie">
+                            📂 Galerie
+                        </button>
+                        <button type="button" class="btn btn-photo" id="cameraBtn" aria-label="Prendre une photo">
+                            📷 Appareil
+                        </button>
+                        <button type="button" class="btn btn-photo btn-delete" id="removePhotoBtn" style="display:none;" aria-label="Supprimer la photo">
+                            ✕ Supprimer
+                        </button>
+                    </div>
+                    <input type="file" id="photoInputGallery" accept="image/*" style="display:none" aria-label="Sélectionner une image depuis la galerie">
+                    <input type="file" id="photoInputCamera" accept="image/*" capture="environment" style="display:none" aria-label="Capturer une image">
+                </div>
+
+                <!-- CHAMPS PRINCIPAUX -->
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group flex-2">
+                            <label for="beerName">Nom <span class="required">*</span></label>
+                            <input type="text" id="beerName" placeholder="Ex: Chimay Bleue" required aria-required="true">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="beerRating">Note /10 <span class="required">*</span></label>
+                            <input type="number" id="beerRating" min="0" max="10" step="0.5" placeholder="7.5" required aria-required="true">
+                        </div>
+                    </div>
+
+                    <!-- Étoiles interactives pour la note principale -->
+                    <div class="star-rating-row" id="starRatingRow" role="group" aria-label="Note sur 10 en étoiles">
+                        <button type="button" class="star-btn" data-val="1" aria-label="1 étoile">★</button>
+                        <button type="button" class="star-btn" data-val="2" aria-label="2 étoiles">★</button>
+                        <button type="button" class="star-btn" data-val="3" aria-label="3 étoiles">★</button>
+                        <button type="button" class="star-btn" data-val="4" aria-label="4 étoiles">★</button>
+                        <button type="button" class="star-btn" data-val="5" aria-label="5 étoiles">★</button>
+                        <button type="button" class="star-btn" data-val="6" aria-label="6 étoiles">★</button>
+                        <button type="button" class="star-btn" data-val="7" aria-label="7 étoiles">★</button>
+                        <button type="button" class="star-btn" data-val="8" aria-label="8 étoiles">★</button>
+                        <button type="button" class="star-btn" data-val="9" aria-label="9 étoiles">★</button>
+                        <button type="button" class="star-btn" data-val="10" aria-label="10 étoiles">★</button>
+                    </div>
+                </div>
+
+                <!-- COMPOSITION NOTES -->
+                <div class="form-section composition-section">
+                    <h3 class="section-title">⚙ Composition détaillée (optionnel)</h3>
+                    <div class="composition-grid">
+                        <div class="comp-item">
+                            <label>Odeur /5</label>
+                            <div class="mini-stars" id="smellStars" role="group" aria-label="Note odeur sur 5">
+                                <button type="button" class="mini-star" data-val="1">★</button>
+                                <button type="button" class="mini-star" data-val="2">★</button>
+                                <button type="button" class="mini-star" data-val="3">★</button>
+                                <button type="button" class="mini-star" data-val="4">★</button>
+                                <button type="button" class="mini-star" data-val="5">★</button>
+                            </div>
+                        </div>
+                        <div class="comp-item">
+                            <label>Goût /5</label>
+                            <div class="mini-stars" id="tasteStars" role="group" aria-label="Note goût sur 5">
+                                <button type="button" class="mini-star" data-val="1">★</button>
+                                <button type="button" class="mini-star" data-val="2">★</button>
+                                <button type="button" class="mini-star" data-val="3">★</button>
+                                <button type="button" class="mini-star" data-val="4">★</button>
+                                <button type="button" class="mini-star" data-val="5">★</button>
+                            </div>
+                        </div>
+                        <div class="comp-item">
+                            <label>Mousse</label>
+                            <div class="foam-options">
+                                <label class="radio-label"><input type="radio" name="foam" value="peu"> Peu</label>
+                                <label class="radio-label"><input type="radio" name="foam" value="moyen"> Moyen</label>
+                                <label class="radio-label"><input type="radio" name="foam" value="beaucoup"> Beaucoup</label>
+                            </div>
+                        </div>
+                        <div class="comp-item">
+                            <label>Amertume /5</label>
+                            <div class="mini-stars" id="bitternessStars" role="group" aria-label="Note amertume sur 5">
+                                <button type="button" class="mini-star" data-val="1">★</button>
+                                <button type="button" class="mini-star" data-val="2">★</button>
+                                <button type="button" class="mini-star" data-val="3">★</button>
+                                <button type="button" class="mini-star" data-val="4">★</button>
+                                <button type="button" class="mini-star" data-val="5">★</button>
+                            </div>
+                        </div>
+                        <div class="comp-item">
+                            <label>Rondeur /5</label>
+                            <div class="mini-stars" id="roundnessStars" role="group" aria-label="Note rondeur sur 5">
+                                <button type="button" class="mini-star" data-val="1">★</button>
+                                <button type="button" class="mini-star" data-val="2">★</button>
+                                <button type="button" class="mini-star" data-val="3">★</button>
+                                <button type="button" class="mini-star" data-val="4">★</button>
+                                <button type="button" class="mini-star" data-val="5">★</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TYPE & CONTENANT -->
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="beerType">Type</label>
+                            <select id="beerType">
+                                <option value="">— Choisir un type —</option>
+                                <option value="Blonde">Blonde</option>
+                                <option value="Brune">Brune</option>
+                                <option value="Ambrée">Ambrée</option>
+                                <option value="Triple">Triple</option>
+                                <option value="Quadruple">Quadruple</option>
+                                <option value="Blanche">Blanche (Witbier)</option>
+                                <option value="Stout">Stout</option>
+                                <option value="Porter">Porter</option>
+                                <option value="IPA">IPA</option>
+                                <option value="IPA NE">IPA NE (New England)</option>
+                                <option value="Lambic">Lambic</option>
+                                <option value="Gueuze">Gueuze</option>
+                                <option value="Saison">Saison / Farmhouse Ale</option>
+                                <option value="Flanders Red Ale">Flanders Red Ale</option>
+                                <option value="Scotch Ale">Scotch Ale / Wee Heavy</option>
+                                <option value="Bock">Bock</option>
+                                <option value="Doppelbock">Doppelbock</option>
+                                <option value="Dunkel">Dunkel</option>
+                                <option value="Weizen/Weissbier">Weizen / Weissbier</option>
+                                <option value="Kölsch">Kölsch</option>
+                                <option value="Pils/Pilsner">Pils / Pilsner</option>
+                                <option value="Altbier">Altbier</option>
+                                <option value="Bière de garde">Bière de garde</option>
+                                <option value="Bière de saison">Bière de saison</option>
+                                <option value="Sour">Sour (Acidulée)</option>
+                                <option value="Fruit">Bière aux fruits</option>
+                                <option value="Spéciale">Spéciale / Artisanale</option>
+                                <option value="Radicchio">Radicchio / Risque</option>
+                                <option value="Barrel Aged">Barrel Aged</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="beerContainer">Contenant</label>
+                            <select id="beerContainer">
+                                <option value="">— Choisir —</option>
+                                <option value="Bouteille en verre">Bouteille en verre</option>
+                                <option value="Bouteille en plastique">Bouteille en plastique</option>
+                                <option value="Canette">Canette</option>
+                                <option value="Brique carton">Brique carton (bag-in-box)</option>
+                                <option value="Fût">Fût</option>
+                                <option value="Verre (pression)">Verre (pression)</option>
+                                <option value="Growler">Growler</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- IPA toggle -->
+                    <div class="toggle-row">
+                        <label for="beerIPA" class="toggle-label">Bière IPA ?</label>
+                        <label class="switch">
+                            <input type="checkbox" id="beerIPA">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ORIGINE -->
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="beerCountry">Pays</label>
+                            <input type="text" id="beerCountry" placeholder="Ex: Belgique">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="beerRegion">Région</label>
+                            <input type="text" id="beerRegion" placeholder="Ex: Flandre">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MÉMO -->
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="beerMemo">Notes / Mémo</label>
+                        <textarea id="beerMemo" rows="3" placeholder="Vos impressions, souvenirs, accords mets…)"></textarea>
+                    </div>
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="form-actions" id="formActions">
+                    <button type="submit" class="btn btn-steampunk btn-brass btn-save" id="saveBtn" disabled>⚙ Enregistrer</button>
+                    <button type="button" class="btn btn-steampunk btn-copper" id="cancelBtn">Annuler</button>
+                    <button type="button" class="btn btn-delete" id="deleteBtn" style="display:none;">⛔ Supprimer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         MAIN APP
+    ══════════════════════════════════════════════════════════════ -->
+    <div class="app-container">
+        <!-- ── HEADER ── -->
+        <header class="app-header" role="banner">
+            <div class="header-left">
+                <button class="icon-btn" id="searchBtn" aria-label="Rechercher une bière">
+                    🔍
+                </button>
+                <!-- Champ de recherche (caché, déployé via JS) -->
+                <div class="search-bar" id="searchBar" role="search" style="display:none;">
+                    <input type="text" id="searchInput" placeholder="Nom de la bière…" aria-label="Rechercher par nom">
+                    <button class="icon-btn" id="searchCloseBtn" aria-label="Fermer la recherche">✕</button>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <h1 class="app-title">
+                    <span class="gear-icon-title" aria-hidden="true">⚙</span>
+                    StarBeer
+                    <span class="gear-icon-title gear-right" aria-hidden="true">⚙</span>
+                </h1>
+                <p class="app-subtitle">Mon carnet de bières</p>
+            </div>
+
+            <div class="header-right">
+                <button class="icon-btn add-btn" id="addBtn" aria-label="Ajouter une nouvelle bière">
+                    +
+                </button>
+            </div>
+        </header>
+
+        <!-- ── FILTRE / TRI ── -->
+        <nav class="filter-bar" role="navigation" aria-label="Tri et filtrage">
+            <div class="filter-group">
+                <label for="sortField">Trier par</label>
+                <select id="sortField">
+                    <option value="createdAt">Date</option>
+                    <option value="name">Nom</option>
+                    <option value="rating">Note</option>
+                    <option value="type">Type</option>
+                    <option value="container">Contenant</option>
+                </select>
+                <button class="sort-dir-btn" id="sortDirBtn" aria-label="Direction du tri">
+                    <span id="sortDirIcon">⬆</span>
+                </button>
+            </div>
+            <div class="filter-group filter-search" id="activeSearchInfo" style="display:none;">
+                <span class="search-badge" id="searchBadge">Recherche : <em id="searchTermDisplay"></em></span>
+                <button class="clear-search-btn" id="clearSearchBtn" aria-label="Effacer la recherche">✕</button>
+            </div>
+        </nav>
+
+        <!-- ── COMPTEUR ── -->
+        <div class="stats-bar" id="statsBar" role="status" aria-live="polite">
+            <span id="beerCount">0 bière(s)</span>
+        </div>
+
+        <!-- ── LISTE DES BIÈRES ── -->
+        <main class="beer-grid" id="beerGrid" role="main" aria-label="Liste des bières">
+            <!-- État vide -->
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="empty-illustration" aria-hidden="true">
+                    <div class="empty-gears">
+                        <span class="big-gear">⚙</span>
+                        <span class="small-gear">⚙</span>
+                    </div>
+                    <span class="empty-beer-icon">🍺</span>
+                </div>
+                <h2>Aucune bière enregistrée</h2>
+                <p>Appuyez sur <strong>+</strong> pour ajouter votre première bière brassée !</p>
+            </div>
+            <!-- Cartes injectées via JS -->
+        </main>
+        <!-- ── FOOTER ── -->
+<footer class="app-footer">
+    <p class="footer-copyright">
+        © 2026 — Tous droits réservés, <strong>LEROY Aurélien</strong> · Version 1.0
+    </p>
+</footer>
+    </div>
+
+    <script src="app.js"></script>
+
+    <!-- PWA Service Worker -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('[PWA] Service Worker enregistré ✓', reg.scope))
+                .catch(err => console.warn('[PWA] Échec SW:', err));
+        });
+    }
+</script>
+</body>
+</html>
