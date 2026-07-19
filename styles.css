@@ -1388,3 +1388,36 @@ body {
     color: var(--col-brass);
     font-weight: 600;
 }
+
+/* --- LOADER PHOTO --- */
+.photo-loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(20, 15, 10, 0.85);
+    color: #f0e6d2;
+    border-radius: 8px; /* Adapte si ton preview a des bords différents */
+    z-index: 10;
+    backdrop-filter: blur(2px);
+}
+
+.photo-loader .spinner {
+    font-size: 2.5rem;
+    color: #c9a227; /* Couleur cuivre/brass */
+    animation: spin 1.5s linear infinite;
+}
+
+.photo-loader span.text {
+    font-size: 0.9rem;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.5px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
