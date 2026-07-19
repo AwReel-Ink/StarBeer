@@ -18,9 +18,6 @@
     <link rel="apple-touch-icon" href="icons/icon-192.png">
 </head>
 <body>
-    <!-- ══════════════════════════════════════════════════════════════
-         DÉCORATION STEAMPUNK : pipes en arrière-plan
-    ══════════════════════════════════════════════════════════════ -->
     <div class="steam-bg" aria-hidden="true">
         <div class="pipe pipe-1"></div>
         <div class="pipe pipe-2"></div>
@@ -31,9 +28,6 @@
         <div class="steam steam-2"></div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════
-         MODALE DE DÉTAIL (lecture seule)
-    ══════════════════════════════════════════════════════════════ -->
     <div id="detailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
         <div class="modal-content detail-card">
             <div class="detail-header">
@@ -48,20 +42,15 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════
-         MODALE CRÉER / MODIFIER
-    ══════════════════════════════════════════════════════════════ -->
     <div id="formModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="formModalTitle">
         <div class="modal-content form-card">
             <div class="form-header">
-                <!-- Icône engrenage à gauche du titre -->
                 <span class="form-gear-icon" aria-hidden="true">⚙</span>
                 <h2 id="formModalTitle" class="modal-title">Nouvelle Bière</h2>
                 <button class="btn-close" id="formCloseBtn" aria-label="Fermer">✕</button>
             </div>
 
             <form id="beerForm" novalidate>
-                <!-- PHOTO -->
                 <div class="form-section photo-section">
                     <div class="photo-preview" id="photoPreview">
                         <div class="photo-placeholder" id="photoPlaceholder">
@@ -80,11 +69,10 @@
                             ✕ Supprimer
                         </button>
                     </div>
-                    <input type="file" id="photoInputGallery" accept="image/*" style="display:none" aria-label="Sélectionner une image depuis la galerie">
-                    <input type="file" id="photoInputCamera" accept="image/*" capture="environment" style="display:none" aria-label="Capturer une image">
+                    <input type="file" id="photoInputGallery" accept="image/*,.heic,.heif,.dng" style="display:none" aria-label="Sélectionner une image depuis la galerie">
+                    <input type="file" id="photoInputCamera" accept="image/*,.heic,.heif,.dng" capture="environment" style="display:none" aria-label="Capturer une image">
                 </div>
 
-                <!-- CHAMPS PRINCIPAUX -->
                 <div class="form-section">
                     <div class="form-row">
                         <div class="form-group flex-2">
@@ -97,7 +85,6 @@
                         </div>
                     </div>
 
-                    <!-- Étoiles interactives pour la note principale -->
                     <div class="star-rating-row" id="starRatingRow" role="group" aria-label="Note sur 10 en étoiles">
                         <button type="button" class="star-btn" data-val="1" aria-label="1 étoile">★</button>
                         <button type="button" class="star-btn" data-val="2" aria-label="2 étoiles">★</button>
@@ -112,7 +99,6 @@
                     </div>
                 </div>
 
-                <!-- COMPOSITION NOTES -->
                 <div class="form-section composition-section">
                     <h3 class="section-title">⚙ Composition détaillée (optionnel)</h3>
                     <div class="composition-grid">
@@ -167,7 +153,6 @@
                     </div>
                 </div>
 
-                <!-- TYPE & CONTENANT -->
                 <div class="form-section">
                     <div class="form-row">
                         <div class="form-group flex-1">
@@ -221,7 +206,6 @@
                         </div>
                     </div>
 
-                    <!-- IPA toggle -->
                     <div class="toggle-row">
                         <label for="beerIPA" class="toggle-label">Bière IPA ?</label>
                         <label class="switch">
@@ -231,7 +215,6 @@
                     </div>
                 </div>
 
-                <!-- ORIGINE -->
                 <div class="form-section">
                     <div class="form-row">
                         <div class="form-group flex-1">
@@ -245,7 +228,6 @@
                     </div>
                 </div>
 
-                <!-- MÉMO -->
                 <div class="form-section">
                     <div class="form-group">
                         <label for="beerMemo">Notes / Mémo</label>
@@ -253,7 +235,6 @@
                     </div>
                 </div>
 
-                <!-- ACTIONS -->
                 <div class="form-actions" id="formActions">
                     <button type="submit" class="btn btn-steampunk btn-brass btn-save" id="saveBtn" disabled>⚙ Enregistrer</button>
                     <button type="button" class="btn btn-steampunk btn-copper" id="cancelBtn">Annuler</button>
@@ -263,17 +244,12 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════
-         MAIN APP
-    ══════════════════════════════════════════════════════════════ -->
     <div class="app-container">
-        <!-- ── HEADER ── -->
         <header class="app-header" role="banner">
             <div class="header-left">
                 <button class="icon-btn" id="searchBtn" aria-label="Rechercher une bière">
                     🔍
                 </button>
-                <!-- Champ de recherche (caché, déployé via JS) -->
                 <div class="search-bar" id="searchBar" role="search" style="display:none;">
                     <input type="text" id="searchInput" placeholder="Nom de la bière…" aria-label="Rechercher par nom">
                     <button class="icon-btn" id="searchCloseBtn" aria-label="Fermer la recherche">✕</button>
@@ -296,7 +272,6 @@
             </div>
         </header>
 
-        <!-- ── FILTRE / TRI ── -->
         <nav class="filter-bar" role="navigation" aria-label="Tri et filtrage">
             <div class="filter-group">
                 <label for="sortField">Trier par</label>
@@ -317,14 +292,11 @@
             </div>
         </nav>
 
-        <!-- ── COMPTEUR ── -->
         <div class="stats-bar" id="statsBar" role="status" aria-live="polite">
             <span id="beerCount">0 bière(s)</span>
         </div>
 
-        <!-- ── LISTE DES BIÈRES ── -->
         <main class="beer-grid" id="beerGrid" role="main" aria-label="Liste des bières">
-            <!-- État vide -->
             <div class="empty-state" id="emptyState" style="display:none;">
                 <div class="empty-illustration" aria-hidden="true">
                     <div class="empty-gears">
@@ -336,19 +308,19 @@
                 <h2>Aucune bière enregistrée</h2>
                 <p>Appuyez sur <strong>+</strong> pour ajouter votre première bière brassée !</p>
             </div>
-            <!-- Cartes injectées via JS -->
         </main>
-        <!-- ── FOOTER ── -->
-<footer class="app-footer">
-    <p class="footer-copyright">
-        © 2026 — Tous droits réservés, <strong>LEROY Aurélien</strong> · Version 1.0
-    </p>
-</footer>
+
+        <footer class="app-footer">
+            <p class="footer-copyright">
+                © 2026 — Tous droits réservés, <strong>LEROY Aurélien</strong> · Version 1.1
+            </p>
+        </footer>
     </div>
 
+    <!-- Décodeur HEIC/HEIF — conversion vers JPEG avant traitement Canvas -->
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
     <script src="app.js"></script>
 
-    <!-- PWA Service Worker -->
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -358,5 +330,6 @@
         });
     }
 </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
