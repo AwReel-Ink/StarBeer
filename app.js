@@ -669,41 +669,77 @@ function setupStarGroup(selector, inputId, max = 10) {
 
 /**
  * Convertit une image en WebP (max 800px de largeur, qualité 0.85).
- * @param {File} file   - fichier image source
+ * Gère la conversion préalable des formats HEIC/HEIF.
+ * @param {File|Blob} file - fichier image source
  * @returns {Promise<Blob>} blob WebP
  */
-function convertToWebP(file) {
+async function convertToWebP(file) {
+    let sourceBlob = file;
+
+    // 1. Vérifier si c'est du HEIC/HEIF
+    const isHeic = file.type === 'image/heic' || 
+                   file.type === 'image/heif' || 
+                   (file.name && file.name.toLowerCase().match(/\.(heic|heif)$/));
+
+    if (isHeic) {
+        try {
+            console.log("Format HEIC détecté, conversion en JPEG...");
+            const convertedBlob = await heic2any({
+                blob: file,
+                toType: 'image/jpeg',
+                quality: 0.9
+            });
+            // heic2any peut retourner un tableau de blobs si l'image contient plusieurs frames
+            sourceBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+        } catch (err) {
+            console.error('[Photo] Erreur conversion HEIC :', err);
+            throw new Error('Échec de la conversion HEIC');
+        }
+    }
+
+    // 2. Redimensionner et convertir en WebP via Canvas
     return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img  = new Image();
-            img.onload = () => {
-                const MAX_W = 800;
-                let w = img.naturalWidth;
-                let h = img.naturalHeight;
-                if (w > MAX_W) {
-                    h = Math.round(h * MAX_W / w);
-                    w = MAX_W;
-                }
-                const canvas = document.createElement('canvas');
-                canvas.width  = w;
-                canvas.height = h;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, w, h);
-                canvas.toBlob(
-                    (blob) => {
-                        if (blob) resolve(blob);
-                        else    reject(new Error('Échec de la conversion WebP'));
-                    },
-                    'image/webp',
-                    0.85
-                );
-            };
-            img.onerror = () => reject(new Error('Erreur chargement image'));
-            img.src = e.target.result;
+        const img = new Image();
+        img.onload = () => {
+            const MAX_W = 800;
+            let w = img.naturalWidth;
+            let h = img.naturalHeight;
+            
+            // Redimensionnement proportionnel
+            if (w > MAX_W) {
+                h = Math.round(h * MAX_W / w);
+                w = MAX_W;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width  = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            
+            // Fond blanc pour préserver la transparence (PNG) lors de la conversion WebP
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, w, h);
+            
+            ctx.drawImage(img, 0, 0, w, h);
+            
+            canvas.toBlob(
+                (blob) => {
+                    URL.revokeObjectURL(img.src); // Libérer la mémoire
+                    if (blob) resolve(blob);
+                    else    reject(new Error('Échec de la conversion WebP'));
+                },
+                'image/webp',
+                0.85
+            );
         };
-        reader.onerror = () => reject(new Error('Erreur FileReader'));
-        reader.readAsDataURL(file);
+        
+        img.onerror = () => {
+            URL.revokeObjectURL(img.src);
+            reject(new Error('Erreur chargement image (format non supporté)'));
+        };
+        
+        // createObjectURL est bien plus performant que readAsDataURL pour les grosses images
+        img.src = URL.createObjectURL(sourceBlob);
     });
 }
 
@@ -719,7 +755,9 @@ function setupPhotoInputs() {
     cameraBtn.addEventListener('click',  () => cameraIn.click());
 
     const handleFile = async (file) => {
-        if (!file || !file.type.startsWith('image/')) return;
+        // On accepte le fichier même si le type MIME est absent (fréquent avec HEIC sur Android)
+        if (!file) return;
+        
         try {
             const blob = await convertToWebP(file);
             State.photoBlob = blob;
@@ -727,7 +765,7 @@ function setupPhotoInputs() {
             document.getElementById('removePhotoBtn').style.display = 'inline-flex';
         } catch (err) {
             console.error('[Photo] Erreur conversion :', err);
-            alert('Impossible de traiter cette image.');
+            alert('Impossible de traiter cette image. Format non supporté ou corrompu.');
         }
     };
 
