@@ -754,17 +754,56 @@ function setupPhotoInputs() {
     galleryBtn.addEventListener('click', () => galleryIn.click());
     cameraBtn.addEventListener('click',  () => cameraIn.click());
 
+    // --- NOUVEAU : Fonction utilitaire pour gérer l'affichage du loader ---
+    const setPhotoLoading = (isLoading, message = "Traitement de l'image...") => {
+        const preview = document.getElementById('photoPreview');
+        const existingLoader = preview.querySelector('.photo-loader');
+        
+        // On retire l'ancien loader s'il y en a un
+        if (existingLoader) existingLoader.remove();
+
+        if (isLoading) {
+            // On cache l'image actuelle et le placeholder pendant le chargement
+            const currentImg = preview.querySelector('img');
+            if (currentImg) currentImg.style.display = 'none';
+            const ph = document.getElementById('photoPlaceholder');
+            if (ph) ph.style.display = 'none';
+
+            // On crée le loader
+            const loader = document.createElement('div');
+            loader.className = 'photo-loader';
+            loader.innerHTML = `
+                <span class="spinner" aria-hidden="true">⚙</span>
+                <span class="text">${message}</span>
+            `;
+            preview.appendChild(loader);
+        }
+    };
+
     const handleFile = async (file) => {
         // On accepte le fichier même si le type MIME est absent (fréquent avec HEIC sur Android)
         if (!file) return;
-        
+
         try {
+            // 1. Afficher le loader
+            setPhotoLoading(true);
+
+            // 2. Laisser le navigateur dessiner le loader (50ms) avant de bloquer le CPU
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            // 3. Lancer la conversion lourde
             const blob = await convertToWebP(file);
             State.photoBlob = blob;
+            
+            // 4. Retirer le loader et afficher la photo
+            setPhotoLoading(false);
             setPhotoPreview(blob);
             document.getElementById('removePhotoBtn').style.display = 'inline-flex';
+
         } catch (err) {
             console.error('[Photo] Erreur conversion :', err);
+            setPhotoLoading(false); // Bien retirer le loader en cas d'erreur
+            setPhotoPreview(null);  // Remettre l'état initial
             alert('Impossible de traiter cette image. Format non supporté ou corrompu.');
         }
     };
