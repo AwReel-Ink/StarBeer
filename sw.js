@@ -3,7 +3,7 @@
 // Gestion du cache pour fonctionnement hors ligne
 // ═══════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'starbeer-v1.1';
+const CACHE_NAME = 'starbeer-v1.2';
 
 // ── Phase d'installation : pré-cache du shell de l'app ──
 self.addEventListener('install', (event) => {
